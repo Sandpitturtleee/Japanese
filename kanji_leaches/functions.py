@@ -1,7 +1,10 @@
+import re
 import pandas as pd
 import tkinter as tk
 from tkinter import scrolledtext
+from jamdict import Jamdict
 
+jam = Jamdict()
 kana_set = set()
 kana_set.update(chr(code) for code in range(0x3040, 0x30A0))  # Hiragana
 kana_set.update(chr(code) for code in range(0x30A0, 0x3100))  # Katakana
@@ -41,7 +44,21 @@ def read_xlsx():
     return merged
 
 
-def search_kanji(merged_dict, input_text):
+def lookup_meaning(word):
+    res = jam.lookup_iter(word)
+    first_entry = next(iter(res.entries), None)
+    if first_entry:
+        entry_str = str(first_entry)
+        # Use regex to capture text between ':' and '(('
+        match = re.search(r':(.*?)\(\(', entry_str)
+        if match:
+            meaning = match.group(1).strip()
+            # Remove numbering like "1. ", "2. ", etc.
+            meaning = re.sub(r'(?:^|[;/])\s*\d+\.\s*', lambda m: m.group(0)[0] if m.group(0)[0] in ';/ ' else '', meaning)
+            return meaning.strip()
+    return ""
+
+def search_words(merged_dict, input_text):
     result = ""
     kanji_only_text = filter_kana(input_text)
     seen_kanji = set()
@@ -60,6 +77,12 @@ def search_kanji(merged_dict, input_text):
                 word = entry.get('word', "")
                 furigana = entry.get('furigana', "")
                 meaning = entry.get('meaning', "")
+
+                # If meaning is missing, attempt to look it up
+                if not meaning:
+                    meaning = lookup_meaning(word)
+                    entry['meaning'] = meaning  # Optionally update the dictionary
+
                 full = " ".join([word, furigana, meaning]).strip()
                 full = f"({full})"
                 result += (
@@ -80,7 +103,7 @@ def leaches_main():
     def on_search(event=None):  # Accept optional event parameter for key binding
         entered = entry.get()
         output.delete("1.0", tk.END)
-        result = search_kanji(kanji_dict, entered)
+        result = search_words(kanji_dict, entered)
         output.insert("1.0", result)
 
     root = tk.Tk()
@@ -91,7 +114,7 @@ def leaches_main():
     label_font = ("Arial", 28)
     entry_font = ("Arial", 28)
     button_font = ("Arial", 24)
-    output_font = ("Arial", 30)
+    output_font = ("Arial", 25)
 
     tk.Label(root, text="Enter word:", font=label_font).pack(pady=12)
     entry = tk.Entry(root, font=entry_font)
@@ -102,3 +125,6 @@ def leaches_main():
     output.pack(padx=20, pady=20, fill=tk.BOTH, expand=True)
 
     root.mainloop()
+
+
+
