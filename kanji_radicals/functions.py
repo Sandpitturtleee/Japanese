@@ -2,11 +2,12 @@ import pandas as pd
 import re
 import tkinter as tk
 from tkinter import scrolledtext
-
+from jamdict import Jamdict
 
 kana_set = set()
 kana_set.update(chr(code) for code in range(0x3040, 0x30A0))  # Hiragana
 kana_set.update(chr(code) for code in range(0x30A0, 0x3100))  # Katakana
+jam = Jamdict()
 
 
 def filter_kana(s):
@@ -29,6 +30,27 @@ def read_xlsx():
     return kanji_dict
 
 
+def search_jamdict(kanji):
+    result = ""
+    kanji_entry = jam.lookup(kanji)
+    c = kanji_entry.chars[0]
+    result += f"{c} {' '.join(c.meanings())}\n"
+
+    radicals_ids = jam.krad[kanji]
+    radical_names = []
+    for radical in radicals_ids:
+        radical_entry = jam.lookup(radical)
+        for c in radical_entry.chars:
+            if c.text == radical:
+                radical_names.append(c.meanings()[0])
+                break
+        else:
+            if radical_entry.chars:
+                radical_names.append(radical_entry.chars[0].meanings()[0])
+    result += " ".join(radical_names)
+    return result
+
+
 def search_kanji(kanji_dict, input_text):
     result = ""
     input_text = filter_kana(input_text)
@@ -37,7 +59,7 @@ def search_kanji(kanji_dict, input_text):
             result += f"{k} {kanji_dict[k]['Meaning']}\n"
             result += f"{kanji_dict[k]['Radicals']}\n"
         else:
-            result += f"{k} NOT FOUND\n\n"
+            result += f"{search_jamdict(k)}\n"
     return result
 
 
