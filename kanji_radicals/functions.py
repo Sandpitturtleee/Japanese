@@ -33,13 +33,16 @@ def read_xlsx():
 def search_jamdict(kanji):
     result = ""
     kanji_entry = jam.lookup(kanji)
+    if not kanji_entry.chars:  # If kanji not found
+        return "NOT FOUND"
     c = kanji_entry.chars[0]
     result += f"{c} {' '.join(c.meanings())}\n"
-
     radicals_ids = jam.krad[kanji]
     radical_names = []
     for radical in radicals_ids:
         radical_entry = jam.lookup(radical)
+        if not radical_entry.chars:
+            continue  # skip if not found
         for c in radical_entry.chars:
             if c.text == radical:
                 radical_names.append(c.meanings()[0])
