@@ -1,7 +1,8 @@
-import pandas as pd
 import re
 import tkinter as tk
 from tkinter import scrolledtext
+
+import pandas as pd
 from jamdict import Jamdict
 
 kana_set = set()
@@ -12,21 +13,21 @@ jam = Jamdict()
 
 def filter_kana(s):
     """Remove hiragana and katakana from input string."""
-    return ''.join(c for c in s if c not in kana_set)
+    return "".join(c for c in s if c not in kana_set)
 
 
 def clean_text(s):
     if isinstance(s, str):
-        s = s.lower().replace('+', '').replace(',', '')
-        s = re.sub(r'\s+', ' ', s).strip()
+        s = s.lower().replace("+", "").replace(",", "")
+        s = re.sub(r"\s+", " ", s).strip()
     return s
 
 
 def read_xlsx():
-    df = pd.read_excel('kanji_radicals.xlsx')
-    for col in ['Meaning', 'Radicals']:
+    df = pd.read_excel("kanji_radicals.xlsx")
+    for col in ["Meaning", "Radicals"]:
         df[col] = df[col].apply(clean_text)
-    kanji_dict = df.set_index('Kanji')[['Meaning', 'Radicals']].to_dict(orient='index')
+    kanji_dict = df.set_index("Kanji")[["Meaning", "Radicals"]].to_dict(orient="index")
     return kanji_dict
 
 
@@ -77,8 +78,10 @@ def radicals_main():
 
     root = tk.Tk()
     root.title("Kanji Search")
-    root.attributes('-fullscreen', True)  # Make full screen
-    root.bind('<Escape>', lambda e: root.attributes('-fullscreen', False))  # Exit full screen with Es
+    root.attributes("-fullscreen", True)  # Make full screen
+    root.bind(
+        "<Escape>", lambda e: root.attributes("-fullscreen", False)
+    )  # Exit full screen with Es
 
     label_font = ("Arial", 28)
     entry_font = ("Arial", 28)

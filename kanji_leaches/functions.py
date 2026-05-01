@@ -54,9 +54,11 @@ def lookup_meaning(word):
         if match:
             meaning = match.group(1).strip()
             # Remove numbering like "1. ", "2. ", etc.
-            meaning = re.sub(r'(?:^|[;/])\s*\d+\.\s*', lambda m: m.group(0)[0] if m.group(0)[0] in ';/ ' else '', meaning)
+            meaning = re.sub(r'(?:^|[;/])\s*\d+\.\s*', lambda m: m.group(0)[0] if m.group(0)[0] in ';/ ' else '',
+                             meaning)
             return meaning.strip()
     return ""
+
 
 def search_words(merged_dict, input_text):
     result = ""
@@ -125,6 +127,3 @@ def leaches_main():
     output.pack(padx=20, pady=20, fill=tk.BOTH, expand=True)
 
     root.mainloop()
-
-
-
